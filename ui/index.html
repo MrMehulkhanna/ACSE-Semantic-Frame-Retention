@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="ACSE — Adaptive Contextual Semantic Retention Engine: Information-theoretic novelty gating for video streams">
+    <title>ACSE — Semantic Video Retention Engine</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a1f2e;
+            --bg-card-hover: #222840;
+            --border: #2a3044;
+            --border-glow: #3b82f6;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-blue: #3b82f6;
+            --accent-cyan: #06b6d4;
+            --accent-purple: #8b5cf6;
+            --accent-pink: #ec4899;
+            --accent-green: #10b981;
+            --accent-amber: #f59e0b;
+            --accent-red: #ef4444;
+            --gradient-hero: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
+            --gradient-card: linear-gradient(145deg, rgba(59,130,246,0.05) 0%, rgba(139,92,246,0.05) 100%);
+            --shadow-lg: 0 20px 60px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 30px rgba(59,130,246,0.15);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --font: 'Inter', -apple-system, sans-serif;
+            --mono: 'JetBrains Mono', monospace;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Subtle animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(59,130,246,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139,92,246,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(236,72,153,0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .app { position: relative; z-index: 1; }
+
+        /* Header */
+        .header {
+            padding: 20px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
+            backdrop-filter: blur(20px);
+            background: rgba(10,14,23,0.8);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: var(--gradient-hero);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            background: var(--gradient-hero);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-text p {
+            font-size: 11px;
+            color: var(--text-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 999px;
+            font-size: 13px;
+            color: var(--accent-green);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.3); }
+        }
+
+        /* Main layout */
+        .main { padding: 24px 32px; display: flex; flex-direction: column; gap: 24px; }
+
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            border-color: rgba(59,130,246,0.3);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-title .icon { font-size: 18px; }
+
+        /* Upload zone */
+        .upload-zone {
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--gradient-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover, .upload-zone.drag-over {
+            border-color: var(--accent-blue);
+            background: rgba(59,130,246,0.05);
+            box-shadow: inset 0 0 40px rgba(59,130,246,0.05);
+        }
+
+        .upload-zone .upload-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .upload-zone h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .upload-zone p {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .upload-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        /* Grid layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+        .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 24px; }
+        .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+
+        /* Factor gauges */
+        .gauge-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .gauge-label {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+        }
+
+        .gauge-bar-outer {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .gauge-bar-inner {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            min-width: 2px;
+        }
+
+        .gauge-value {
+            font-family: var(--mono);
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .gauge-cni .gauge-bar-inner { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+        .gauge-epd .gauge-bar-inner { background: linear-gradient(90deg, var(--accent-red), var(--accent-amber)); }
+        .gauge-sss .gauge-bar-inner { background: linear-gradient(90deg, var(--accent-purple), var(--accent-pink)); }
+        .gauge-pig .gauge-bar-inner { background: linear-gradient(90deg, var(--accent-green), var(--accent-cyan)); }
+        .gauge-raw .gauge-bar-inner { background: linear-gradient(90deg, var(--accent-amber), var(--accent-green)); }
+
+        .gauge-cni .gauge-value { color: var(--accent-cyan); }
+        .gauge-epd .gauge-value { color: var(--accent-amber); }
+        .gauge-sss .gauge-value { color: var(--accent-purple); }
+        .gauge-pig .gauge-value { color: var(--accent-green); }
+        .gauge-raw .gauge-value { color: var(--accent-amber); }
+
+        /* Timeline chart */
+        .timeline-container {
+            width: 100%;
+            height: 200px;
+            position: relative;
+            background: rgba(0,0,0,0.2);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+
+        .timeline-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Results panel */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: var(--mono);
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Retained frames grid */
+        .frames-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .frame-thumb {
+            aspect-ratio: 4/3;
+            background: var(--bg-secondary);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .frame-thumb:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59,130,246,0.2);
+        }
+
+        .frame-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .frame-thumb .frame-label {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 4px 8px;
+            background: rgba(0,0,0,0.7);
+            font-size: 10px;
+            font-family: var(--mono);
+            color: var(--text-secondary);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+        }
+
+        .modal-overlay.active { display: flex; }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            max-width: 640px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .attribution-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .attribution-bar .factor-name {
+            width: 50px;
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .attribution-bar .bar-track {
+            flex: 1;
+            height: 24px;
+            background: rgba(255,255,255,0.03);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .attribution-bar .bar-fill {
+            height: 100%;
+            border-radius: 6px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            padding-left: 8px;
+            font-size: 11px;
+            font-family: var(--mono);
+            color: rgba(255,255,255,0.9);
+        }
+
+        .human-reason {
+            margin-top: 16px;
+            padding: 16px;
+            background: rgba(59,130,246,0.05);
+            border: 1px solid rgba(59,130,246,0.15);
+            border-radius: var(--radius);
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        /* Weight evolution chart */
+        .chart-container {
+            width: 100%;
+            height: 250px;
+            position: relative;
+        }
+
+        .chart-container canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Memory visualisation */
+        .memory-viz {
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        .entropy-display {
+            flex: 0 0 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .entropy-ring {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 6px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .entropy-ring .ring-fill {
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 6px solid transparent;
+            border-top-color: var(--accent-cyan);
+            border-right-color: var(--accent-cyan);
+            transition: transform 0.5s ease;
+        }
+
+        .entropy-value {
+            font-family: var(--mono);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .scatter-container {
+            flex: 1;
+            height: 200px;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            font-family: var(--font);
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--gradient-hero);
+            color: #fff;
+            box-shadow: 0 4px 15px rgba(59,130,246,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 20px rgba(59,130,246,0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255,255,255,0.08);
+        }
+
+        /* Progress bar */
+        .progress-container {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--gradient-hero);
+            border-radius: 2px;
+            transition: width 0.3s ease;
+            animation: progress-shimmer 2s linear infinite;
+        }
+
+        @keyframes progress-shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+
+        /* Scrollbars */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .grid-5 { grid-template-columns: repeat(3, 1fr); }
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        @media (max-width: 640px) {
+            .main { padding: 16px; }
+            .header { padding: 16px; }
+            .grid-5 { grid-template-columns: repeat(2, 1fr); }
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card { animation: fadeIn 0.4s ease-out; }
+        .card:nth-child(2) { animation-delay: 0.1s; }
+        .card:nth-child(3) { animation-delay: 0.2s; }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">
+                <div class="logo-icon">A</div>
+                <div class="logo-text">
+                    <h1>ACSE Engine</h1>
+                    <p>Semantic Video Retention</p>
+                </div>
+            </div>
+            <div class="status-badge" id="statusBadge">
+                <div class="status-dot"></div>
+                <span id="statusText">Initialising…</span>
+            </div>
+        </header>
+
+        <!-- Main content -->
+        <main class="main">
+            <!-- Upload Zone -->
+            <div class="card" id="uploadCard">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">📹</span> Upload Video</div>
+                </div>
+                <div class="upload-zone" id="uploadZone">
+                    <span class="upload-icon">🎬</span>
+                    <h3>Drop your video here</h3>
+                    <p>Supports MP4, AVI, MOV, MKV — any resolution</p>
+                    <input type="file" id="fileInput" accept="video/*">
+                </div>
+                <div id="uploadInfo" style="margin-top: 12px; display: none;">
+                    <p id="uploadFileName" style="color: var(--accent-green); font-weight: 600;"></p>
+                    <button class="btn btn-primary" id="processBtn" style="margin-top: 12px;">▶ Process with ACSE</button>
+                    <div class="progress-container" id="progressContainer">
+                        <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Real-Time Processing View -->
+            <div class="grid-2">
+                <!-- Factor Gauges -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">📊</span> Live Factor Gauges</div>
+                    </div>
+                    <div class="grid-5" id="gaugesGrid">
+                        <div class="gauge-container gauge-cni">
+                            <div class="gauge-label">CNI</div>
+                            <div class="gauge-value" id="gaugeCNI">—</div>
+                            <div class="gauge-bar-outer"><div class="gauge-bar-inner" id="barCNI" style="width:0%"></div></div>
+                        </div>
+                        <div class="gauge-container gauge-epd">
+                            <div class="gauge-label">EPD</div>
+                            <div class="gauge-value" id="gaugeEPD">—</div>
+                            <div class="gauge-bar-outer"><div class="gauge-bar-inner" id="barEPD" style="width:0%"></div></div>
+                        </div>
+                        <div class="gauge-container gauge-sss">
+                            <div class="gauge-label">SSS</div>
+                            <div class="gauge-value" id="gaugeSSS">—</div>
+                            <div class="gauge-bar-outer"><div class="gauge-bar-inner" id="barSSS" style="width:0%"></div></div>
+                        </div>
+                        <div class="gauge-container gauge-pig">
+                            <div class="gauge-label">PIG</div>
+                            <div class="gauge-value" id="gaugePIG">—</div>
+                            <div class="gauge-bar-outer"><div class="gauge-bar-inner" id="barPIG" style="width:0%"></div></div>
+                        </div>
+                        <div class="gauge-container gauge-raw">
+                            <div class="gauge-label">RAW</div>
+                            <div class="gauge-value" id="gaugeRAW">—</div>
+                            <div class="gauge-bar-outer"><div class="gauge-bar-inner" id="barRAW" style="width:0%"></div></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Importance Timeline -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">📈</span> Importance Score Timeline</div>
+                    </div>
+                    <div class="timeline-container">
+                        <canvas id="timelineCanvas" class="timeline-canvas"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Panel -->
+            <div class="card" id="resultsCard" style="display:none;">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">🎯</span> Processing Results</div>
+                    <button class="btn btn-secondary" id="cleanupBtn">🗑 Cleanup</button>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="statTotal" style="color:var(--accent-blue)">0</div>
+                        <div class="stat-label">Total Frames</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statRetained" style="color:var(--accent-green)">0</div>
+                        <div class="stat-label">Retained</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statRate" style="color:var(--accent-purple)">0%</div>
+                        <div class="stat-label">Retention Rate</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="statThreshold" style="color:var(--accent-amber)">0.50</div>
+                        <div class="stat-label">Threshold</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Retained Frames + Weight Evolution -->
+            <div class="grid-2" id="detailsRow" style="display:none;">
+                <!-- Retained Frames -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">🖼</span> Retained Frames</div>
+                        <span id="frameCount" style="color:var(--text-muted); font-size:13px;"></span>
+                    </div>
+                    <div class="frames-grid" id="framesGrid"></div>
+                </div>
+
+                <!-- Weight Evolution -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="card-title"><span class="icon">⚖️</span> Weight Evolution</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Memory State -->
+            <div class="card" id="memoryCard" style="display:none;">
+                <div class="card-header">
+                    <div class="card-title"><span class="icon">🧠</span> Memory State Visualisation</div>
+                </div>
+                <div class="memory-viz">
+                    <div class="entropy-display">
+                        <div class="entropy-ring">
+                            <div class="ring-fill" id="entropyRing"></div>
+                            <div class="entropy-value" id="entropyValue">0.00</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:12px; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px;">Memory Entropy</div>
+                            <div style="font-size:11px; color:var(--text-secondary); margin-top:4px;" id="entropyLabel">Low diversity</div>
+                        </div>
+                    </div>
+                    <div class="scatter-container">
+                        <canvas id="scatterCanvas"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Explanation Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <div class="modal-title">
+                <span>🔍 Frame Explanation — <span id="modalFrameId">#0</span></span>
+                <button class="modal-close" id="modalClose">✕</button>
+            </div>
+            <div style="margin-bottom:16px;">
+                <span style="font-size:14px; color:var(--text-muted);">Decision:</span>
+                <span id="modalDecision" style="font-weight:700; font-size:16px; margin-left:8px;"></span>
+                <span style="margin-left:16px; font-size:14px; color:var(--text-muted);">Score:</span>
+                <span id="modalScore" style="font-family:var(--mono); font-weight:600; margin-left:4px;"></span>
+            </div>
+            <div id="attributionBars"></div>
+            <div class="human-reason" id="humanReason"></div>
+        </div>
+    </div>
+
+    <script>
+        const API = 'http://127.0.0.1:5050';
+        let currentJobId = null;
+        let allResults = [];
+
+        // -------------------------------------------------------
+        // Init
+        // -------------------------------------------------------
+        document.addEventListener('DOMContentLoaded', () => {
+            checkStatus();
+            setInterval(checkStatus, 5000);
+
+            const zone = document.getElementById('uploadZone');
+            const input = document.getElementById('fileInput');
+
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('drag-over');
+                if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+            });
+            input.addEventListener('change', () => { if (input.files.length) handleFile(input.files[0]); });
+
+            document.getElementById('processBtn').addEventListener('click', processVideo);
+            document.getElementById('cleanupBtn').addEventListener('click', cleanup);
+            document.getElementById('modalClose').addEventListener('click', closeModal);
+            document.getElementById('modalOverlay').addEventListener('click', e => {
+                if (e.target === e.currentTarget) closeModal();
+            });
+        });
+
+        // -------------------------------------------------------
+        // Status
+        // -------------------------------------------------------
+        async function checkStatus() {
+            try {
+                const res = await fetch(`${API}/api/status`);
+                const data = await res.json();
+                document.getElementById('statusText').textContent = 'Engine Ready';
+                document.getElementById('statusBadge').style.borderColor = 'rgba(16,185,129,0.2)';
+            } catch {
+                document.getElementById('statusText').textContent = 'Offline';
+                document.getElementById('statusBadge').style.borderColor = 'rgba(239,68,68,0.2)';
+                document.getElementById('statusBadge').querySelector('.status-dot').style.background = 'var(--accent-red)';
+            }
+        }
+
+        // -------------------------------------------------------
+        // Upload
+        // -------------------------------------------------------
+        async function handleFile(file) {
+            const form = new FormData();
+            form.append('video', file);
+            try {
+                const res = await fetch(`${API}/api/upload`, { method: 'POST', body: form });
+                const data = await res.json();
+                currentJobId = data.job_id;
+                document.getElementById('uploadFileName').textContent = `✓ ${data.filename} uploaded (Job: ${data.job_id})`;
+                document.getElementById('uploadInfo').style.display = 'block';
+            } catch (e) {
+                alert('Upload failed: ' + e.message);
+            }
+        }
+
+        // -------------------------------------------------------
+        // Process
+        // -------------------------------------------------------
+        async function processVideo() {
+            if (!currentJobId) return;
+            const btn = document.getElementById('processBtn');
+            const prog = document.getElementById('progressContainer');
+            btn.disabled = true;
+            btn.textContent = '⏳ Processing…';
+            prog.style.display = 'block';
+            document.getElementById('progressBar').style.width = '60%';
+
+            try {
+                const res = await fetch(`${API}/api/process/${currentJobId}`, { method: 'POST' });
+                const data = await res.json();
+                document.getElementById('progressBar').style.width = '100%';
+                btn.textContent = '✓ Done';
+
+                showResults(data);
+                loadFullResults();
+                loadWeightHistory();
+                loadMemoryState();
+                loadFrames();
+            } catch (e) {
+                btn.textContent = '✗ Error';
+                alert('Processing failed: ' + e.message);
+            }
+        }
+
+        // -------------------------------------------------------
+        // Results
+        // -------------------------------------------------------
+        function showResults(data) {
+            document.getElementById('resultsCard').style.display = 'block';
+            document.getElementById('detailsRow').style.display = 'grid';
+            document.getElementById('memoryCard').style.display = 'block';
+
+            document.getElementById('statTotal').textContent = data.total_frames;
+            document.getElementById('statRetained').textContent = data.retained_frames;
+            document.getElementById('statRate').textContent = (data.retention_rate * 100).toFixed(1) + '%';
+        }
+
+        async function loadFullResults() {
+            if (!currentJobId) return;
+            const res = await fetch(`${API}/api/results/${currentJobId}`);
+            const data = await res.json();
+            allResults = data.results || [];
+
+            // Update timeline
+            drawTimeline(allResults);
+
+            // Update gauges with last frame
+            if (allResults.length > 0) {
+                const last = allResults[allResults.length - 1];
+                updateGauges(last);
+                document.getElementById('statThreshold').textContent = last.threshold.toFixed(2);
+            }
+        }
+
+        function updateGauges(frame) {
+            const gauges = [
+                { id: 'CNI', val: frame.cni },
+                { id: 'EPD', val: frame.epd },
+                { id: 'SSS', val: frame.sss },
+                { id: 'PIG', val: frame.pig },
+                { id: 'RAW', val: frame.raw },
+            ];
+            gauges.forEach(g => {
+                document.getElementById(`gauge${g.id}`).textContent = g.val.toFixed(2);
+                document.getElementById(`bar${g.id}`).style.width = (g.val * 100) + '%';
+            });
+        }
+
+        // -------------------------------------------------------
+        // Timeline chart (pure canvas)
+        // -------------------------------------------------------
+        function drawTimeline(results) {
+            const canvas = document.getElementById('timelineCanvas');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+
+            ctx.clearRect(0, 0, W, H);
+
+            if (!results.length) return;
+
+            const last100 = results.slice(-100);
+            const n = last100.length;
+            const dx = W / (n - 1 || 1);
+
+            // Draw threshold line
+            if (last100[0].threshold !== undefined) {
+                const threshY = H - last100[last100.length-1].threshold * H;
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(245,158,11,0.4)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([6, 4]);
+                ctx.moveTo(0, threshY);
+                ctx.lineTo(W, threshY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = 'rgba(245,158,11,0.6)';
+                ctx.font = '10px Inter';
+                ctx.fillText('Threshold', W - 60, threshY - 4);
+            }
+
+            // Draw importance score line
+            const grad = ctx.createLinearGradient(0, 0, W, 0);
+            grad.addColorStop(0, '#3b82f6');
+            grad.addColorStop(0.5, '#8b5cf6');
+            grad.addColorStop(1, '#ec4899');
+
+            ctx.beginPath();
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 2;
+            last100.forEach((r, i) => {
+                const x = i * dx;
+                const y = H - r.importance_score * H;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // Fill area under curve
+            const gradFill = ctx.createLinearGradient(0, 0, 0, H);
+            gradFill.addColorStop(0, 'rgba(59,130,246,0.15)');
+            gradFill.addColorStop(1, 'rgba(59,130,246,0.0)');
+            ctx.lineTo((n - 1) * dx, H);
+            ctx.lineTo(0, H);
+            ctx.closePath();
+            ctx.fillStyle = gradFill;
+            ctx.fill();
+
+            // Retained frame dots
+            last100.forEach((r, i) => {
+                if (r.decision === 'RETAIN') {
+                    const x = i * dx;
+                    const y = H - r.importance_score * H;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = '#10b981';
+                    ctx.fill();
+                }
+            });
+        }
+
+        // -------------------------------------------------------
+        // Frames
+        // -------------------------------------------------------
+        async function loadFrames() {
+            if (!currentJobId) return;
+            const res = await fetch(`${API}/api/frames/${currentJobId}`);
+            const data = await res.json();
+            const grid = document.getElementById('framesGrid');
+            grid.innerHTML = '';
+            document.getElementById('frameCount').textContent = `${data.frames.length} frames`;
+
+            data.frames.forEach(fname => {
+                const frameIdx = parseInt(fname.replace('frame_', '').replace('.jpg', ''));
+                const div = document.createElement('div');
+                div.className = 'frame-thumb';
+                div.innerHTML = `
+                    <img src="${API}/api/frames/${currentJobId}/${fname}" alt="Frame ${frameIdx}">
+                    <div class="frame-label">#${frameIdx}</div>
+                `;
+                div.addEventListener('click', () => showExplanation(frameIdx));
+                grid.appendChild(div);
+            });
+        }
+
+        // -------------------------------------------------------
+        // Explanation modal
+        // -------------------------------------------------------
+        async function showExplanation(frameIdx) {
+            if (!currentJobId) return;
+            try {
+                const res = await fetch(`${API}/api/explanation/${currentJobId}/${frameIdx}`);
+                const data = await res.json();
+
+                document.getElementById('modalFrameId').textContent = '#' + data.frame_idx;
+                document.getElementById('modalDecision').textContent = data.decision;
+                document.getElementById('modalDecision').style.color = data.decision === 'RETAIN' ? 'var(--accent-green)' : 'var(--accent-red)';
+                document.getElementById('modalScore').textContent = data.importance_score.toFixed(4);
+
+                const barsDiv = document.getElementById('attributionBars');
+                barsDiv.innerHTML = '';
+
+                const colors = { cni: '#3b82f6', epd: '#ef4444', sss: '#8b5cf6', pig: '#10b981', raw: '#f59e0b' };
+                const maxAttr = Math.max(...Object.values(data.attribution).map(Math.abs), 0.01);
+
+                for (const [factor, value] of Object.entries(data.attribution)) {
+                    const pct = Math.abs(value) / maxAttr * 100;
+                    barsDiv.innerHTML += `
+                        <div class="attribution-bar">
+                            <div class="factor-name">${factor}</div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width:${pct}%; background:${colors[factor] || '#666'};">
+                                    ${value >= 0 ? '+' : ''}${value.toFixed(4)}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('humanReason').textContent = data.human_reason;
+                document.getElementById('modalOverlay').classList.add('active');
+            } catch (e) {
+                console.error('Failed to load explanation:', e);
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+        }
+
+        // -------------------------------------------------------
+        // Weight evolution chart (pure canvas)
+        // -------------------------------------------------------
+        async function loadWeightHistory() {
+            try {
+                const res = await fetch(`${API}/api/weights/history`);
+                const data = await res.json();
+                drawWeightChart(data);
+            } catch (e) {
+                console.error('Weight history load failed:', e);
+            }
+        }
+
+        function drawWeightChart(data) {
+            const canvas = document.getElementById('weightChart');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+            const pad = 40;
+
+            ctx.clearRect(0, 0, W, H);
+
+            const factors = Object.keys(data);
+            if (!factors.length) return;
+            const n = data[factors[0]].length;
+            if (n < 2) return;
+
+            const colors = { cni: '#3b82f6', epd: '#ef4444', sss: '#8b5cf6', pig: '#10b981' };
+            const dx = (W - pad * 2) / (n - 1);
+
+            // Axes
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(pad, pad);
+            ctx.lineTo(pad, H - pad);
+            ctx.lineTo(W - pad, H - pad);
+            ctx.stroke();
+
+            // Y labels
+            ctx.fillStyle = 'rgba(255,255,255,0.3)';
+            ctx.font = '10px Inter';
+            for (let v = 0; v <= 1; v += 0.25) {
+                const y = H - pad - v * (H - 2 * pad);
+                ctx.fillText(v.toFixed(2), 4, y + 3);
+            }
+
+            // Lines
+            factors.forEach(f => {
+                const vals = data[f];
+                ctx.beginPath();
+                ctx.strokeStyle = colors[f] || '#888';
+                ctx.lineWidth = 2;
+                vals.forEach((v, i) => {
+                    const x = pad + i * dx;
+                    const y = H - pad - v * (H - 2 * pad);
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                });
+                ctx.stroke();
+            });
+
+            // Legend
+            let legendX = pad + 10;
+            factors.forEach(f => {
+                ctx.fillStyle = colors[f] || '#888';
+                ctx.fillRect(legendX, 10, 12, 12);
+                ctx.fillStyle = 'rgba(255,255,255,0.6)';
+                ctx.font = '11px Inter';
+                ctx.fillText(f.toUpperCase(), legendX + 16, 20);
+                legendX += 70;
+            });
+        }
+
+        // -------------------------------------------------------
+        // Memory state
+        // -------------------------------------------------------
+        async function loadMemoryState() {
+            try {
+                const res = await fetch(`${API}/api/memory/state`);
+                const data = await res.json();
+
+                const entropy = data.entropy || 0;
+                document.getElementById('entropyValue').textContent = entropy.toFixed(2);
+                const rotation = Math.min(entropy / 3.0, 1.0) * 360;
+                document.getElementById('entropyRing').style.transform = `rotate(${rotation}deg)`;
+
+                if (entropy < 1) document.getElementById('entropyLabel').textContent = 'Low diversity';
+                else if (entropy < 2) document.getElementById('entropyLabel').textContent = 'Moderate diversity';
+                else document.getElementById('entropyLabel').textContent = 'High diversity';
+
+                // Draw scatter of descriptor norms vs salience
+                drawScatter(data.descriptors || []);
+            } catch (e) {
+                console.error('Memory state load failed:', e);
+            }
+        }
+
+        function drawScatter(descriptors) {
+            const canvas = document.getElementById('scatterCanvas');
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            ctx.scale(dpr, dpr);
+            const W = rect.width, H = rect.height;
+            const pad = 32;
+
+            ctx.clearRect(0, 0, W, H);
+
+            if (!descriptors.length) return;
+
+            const norms = descriptors.map(d => d.descriptor_norm);
+            const saliences = descriptors.map(d => d.salience);
+            const minN = Math.min(...norms), maxN = Math.max(...norms);
+            const rangeN = maxN - minN || 1;
+
+            // Axes
+            ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(pad, pad);
+            ctx.lineTo(pad, H - pad);
+            ctx.lineTo(W - pad, H - pad);
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255,255,255,0.25)';
+            ctx.font = '10px Inter';
+            ctx.fillText('Descriptor Norm →', W / 2 - 40, H - 6);
+            ctx.save();
+            ctx.translate(10, H / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Salience →', -30, 0);
+            ctx.restore();
+
+            // Points
+            descriptors.forEach(d => {
+                const x = pad + ((d.descriptor_norm - minN) / rangeN) * (W - 2 * pad);
+                const y = H - pad - d.salience * (H - 2 * pad);
+                const alpha = Math.max(d.salience, 0.2);
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(6,182,212,${alpha})`;
+                ctx.fill();
+                ctx.strokeStyle = `rgba(6,182,212,${alpha * 0.5})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            });
+        }
+
+        // -------------------------------------------------------
+        // Cleanup
+        // -------------------------------------------------------
+        async function cleanup() {
+            if (!currentJobId) return;
+            if (!confirm('Delete all data for this job?')) return;
+            try {
+                await fetch(`${API}/api/cleanup/${currentJobId}`, { method: 'DELETE' });
+                location.reload();
+            } catch (e) {
+                alert('Cleanup failed: ' + e.message);
+            }
+        }
+    </script>
+</body>
+</html>
