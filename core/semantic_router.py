@@ -5,7 +5,7 @@ ACSE — Module 5: Multi-Factor Fusion (Semantic Router)
 Combines CNI, EPD, SSS, PIG (Predictive Information Gain), and RAW
 (Resource-Aware Weight) into a single Importance Score with adaptive weights.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Prior work fuses at most two signals (e.g. motion + appearance in Liu & Cheng
   2008).  Zhang et al. 2016 implicitly fuses via LSTM hidden state — opaque.
   VA-RED2 fuses input difficulty with target FLOPs — two signals only.  ReTaKe
@@ -13,19 +13,6 @@ RESEARCH CONTRIBUTION:
   Our fusion combines five heterogeneous factors — information-theoretic novelty,
   event persistence, autoregressive surprise, predictive information gain, and
   CPU load — with weights that are updated online by a Bayesian learning module.
-
-NOVELTY CLAIM:
-  A five-factor adaptive-weight fusion of information-theoretic novelty,
-  event-persistence decay, autoregressive surprise, predictive information
-  gain, and resource load, with online weight learning, for video frame
-  retention gating.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for computing a multi-factor importance score for a video frame
-  comprising fusing a cognitive novelty index, an event persistence decay
-  penalty, a semantic surprise score, a predictive information gain, and a
-  resource-aware weight using online-adapted weights, and gating frame retention
-  on said score.
 """
 
 from __future__ import annotations

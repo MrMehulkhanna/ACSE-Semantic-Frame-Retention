@@ -6,25 +6,13 @@ For every retained frame, produces a human-readable explanation of WHY it was
 retained — which factor dominated and by how much.  Uses Shapley-style marginal
 contribution analysis.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Zhuang 1998, Liu & Cheng 2008, and Zhang et al. 2016 provide no per-frame
   explanations.  VA-RED2 explains computation reduction as a ratio but not
   individual-frame decisions.  ReTaKe lacks frame-level attribution.
   Our explainer computes exact marginal contributions of each factor via
   leave-one-out re-fusion and generates human-readable reason strings, making
   every retention decision auditable.
-
-NOVELTY CLAIM:
-  A Shapley-style marginal-contribution explainer for multi-factor video frame
-  retention decisions, producing per-factor attribution scores and templated
-  human-readable decision reasons.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for explaining video frame retention decisions comprising computing
-  marginal contributions of each factor via leave-one-out re-evaluation of a
-  multi-factor fusion score, and generating a templated natural-language
-  explanation identifying the dominant factors and their contribution
-  percentages.
 """
 
 

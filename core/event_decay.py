@@ -7,7 +7,7 @@ A moving object that entered 3 frames ago is still "active" — continuation
 frames are LESS novel than the arrival frame.  EPD penalises frames that merely
 continue an already-detected event.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Frame-differencing systems (Zhuang 1998) treat every motion frame equally.
   Liu & Cheng 2008 adapts thresholds but has no concept of *event lifetime*.
   Zhang et al. 2016 LSTM summarisation implicitly decays through hidden state
@@ -17,17 +17,6 @@ RESEARCH CONTRIBUTION:
   Our EPD explicitly tracks discrete events with exponential persistence decay,
   so frames that continue a known event are down-weighted in a principled,
   interpretable way.
-
-NOVELTY CLAIM:
-  An explicit event-persistence decay model that detects, tracks, and
-  exponentially decays discrete visual events (motion, appearance,
-  disappearance), suppressing redundant continuation frames in the fusion score.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for suppressing redundant video frames comprising detecting discrete
-  visual events via background subtraction, tracking each event with an
-  exponentially decaying persistence scalar, and subtracting a mean-persistence
-  penalty from a frame importance score.
 """
 
 from __future__ import annotations

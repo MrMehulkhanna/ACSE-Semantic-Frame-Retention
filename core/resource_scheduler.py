@@ -5,7 +5,7 @@ ACSE — Module 8a: Resource-Aware Weighter
 Provides real-time system load monitoring to modulate frame retention.
 Under heavy CPU load, only strongly novel frames pass through.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   No prior video summarisation or frame selection system dynamically adjusts
   its retention threshold based on real-time system resource utilisation.
   Zhuang 1998, Liu & Cheng 2008, Zhang et al. 2016 assume unlimited compute.
@@ -13,16 +13,6 @@ RESEARCH CONTRIBUTION:
   Our resource-aware weighter continuously monitors CPU and memory load
   and multiplicatively scales the importance score, creating graceful
   quality degradation under load.
-
-NOVELTY CLAIM:
-  Real-time CPU-load-aware multiplicative scaling of frame importance scores,
-  enabling graceful degradation of video retention quality under system load.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for resource-aware video frame retention comprising monitoring
-  real-time CPU utilisation, computing a resource-aware weight as the
-  complement of CPU load fraction, and multiplicatively scaling a frame
-  importance score by said weight.
 """
 
 from collections import deque

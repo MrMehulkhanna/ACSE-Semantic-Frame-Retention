@@ -5,7 +5,7 @@ ACSE — Module 7: Online Bayesian Updater (Adaptive Learning)
 Learns which factors are most predictive of "truly important" frames,
 updating fusion weights continuously as new feedback arrives.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Zhuang 1998 and Liu & Cheng 2008 use fixed or heuristically-tuned
   thresholds.  Zhang et al. 2016 learns offline via supervised LSTM training.
   VA-RED2 trains a policy network offline then freezes.  ReTaKe does not
@@ -14,18 +14,6 @@ RESEARCH CONTRIBUTION:
   and applies gradient-based weight updates with softmax normalisation, so the
   fusion weights continuously adapt to the content characteristics of the
   current stream.
-
-NOVELTY CLAIM:
-  An online Bayesian-inspired gradient updater that continuously adapts
-  multi-factor fusion weights based on per-frame reward signals, using
-  softmax-normalised gradient ascent.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for adaptively learning fusion weights for video frame retention
-  comprising receiving per-frame reward signals, computing per-factor gradients
-  as the product of reward and factor value, updating logit-space weights via
-  gradient ascent, and normalising via softmax to yield a probability
-  distribution over factor importance.
 """
 
 from __future__ import annotations

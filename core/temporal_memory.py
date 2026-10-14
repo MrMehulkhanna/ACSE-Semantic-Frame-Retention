@@ -6,7 +6,7 @@ Maintains a rolling compressed memory of recent scene state.  Frames are not
 stored raw — only compressed PCA-of-DCT descriptors are kept.  The memory is
 the living context against which all novelty / surprise is measured.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Unlike Zhuang et al. 1998 (pixel-level frame differencing) or Liu & Cheng
   2008 (adaptive thresholds on raw pixel statistics), this module compresses
   each frame into a 128-d descriptor via block-DCT followed by PCA, then embeds
@@ -15,19 +15,6 @@ RESEARCH CONTRIBUTION:
   supports entropy queries.  VA-RED2 and ReTaKe operate on neural feature
   spaces requiring a pretrained backbone; our descriptor is self-contained and
   < 2 ms to compute at 320×240.
-
-NOVELTY CLAIM:
-  First system to couple a salience-decaying descriptor bank with a directed
-  scene-transition graph and a recurrence hash, enabling O(1) queries for
-  expected state, memory entropy, and scene recurrence without any deep-net
-  forward pass.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for maintaining a temporally-decaying compressed descriptor memory
-  with an associated directed scene-transition graph, wherein incoming video
-  frames are encoded via block-DCT and PCA, stored with per-entry salience that
-  decays multiplicatively, and queried for expected state, recurrence, and
-  entropy to gate downstream retention decisions.
 """
 
 from __future__ import annotations

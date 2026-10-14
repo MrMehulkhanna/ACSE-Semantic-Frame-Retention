@@ -5,7 +5,7 @@ ACSE — Module 8b: Adaptive Threshold Gate
 Applies the final retention decision with a threshold that adapts online to
 maintain a configurable target retention rate.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Liu & Cheng 2008 adapts thresholds but only on pixel-level metrics with a
   fixed PID-like scheme.  Zhang et al. 2016 has no explicit threshold — it
   selects top-k frames post-hoc.  VA-RED2 uses a fixed target computation
@@ -13,16 +13,6 @@ RESEARCH CONTRIBUTION:
   Our gate adapts a scalar threshold via a rate-tracking feedback loop:  if
   too many frames are retained, the threshold rises; if too few, it drops.
   The target retention rate is configurable per deployment.
-
-NOVELTY CLAIM:
-  An online adaptive threshold gate that self-adjusts to maintain a target
-  frame retention rate via a first-order feedback loop on recent decisions.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for adaptive frame retention gating comprising maintaining a
-  decision threshold, tracking the recent retention rate over a sliding window,
-  and adjusting the threshold toward a configurable target rate via a
-  first-order feedback correction.
 """
 
 from collections import deque

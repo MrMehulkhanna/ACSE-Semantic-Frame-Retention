@@ -3,11 +3,11 @@ ACSE — Module 2: Cognitive Novelty Index (CNI)
 ================================================
 
 Quantifies how much *new information* a frame carries relative to what the
-temporal memory already contains.  This is the PRIMARY novel factor — not pixel
+temporal memory already contains.  This is the main factor — not pixel
 difference, not motion.  It is the cosine distance between the frame's
 descriptor and the memory's expected descriptor, normalised by memory entropy.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Zhuang et al. 1998 uses absolute pixel difference — no semantic compression.
   Liu & Cheng 2008 adapts thresholds but still on low-level features.  Zhang
   et al. 2016 uses LSTM hidden-state distance — requires a large pretrained
@@ -16,18 +16,6 @@ RESEARCH CONTRIBUTION:
   token space, not in compressed visual descriptors.
   Our CNI operates on 128-d PCA-DCT descriptors and normalises by memory entropy,
   so the score self-calibrates: in a diverse memory the bar for "novel" is higher.
-
-NOVELTY CLAIM:
-  An entropy-normalised cosine-distance novelty metric computed on a
-  PCA-compressed DCT descriptor against a salience-weighted temporal memory,
-  yielding a self-calibrating importance signal without any neural forward pass.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for computing a cognitive novelty index for a video frame comprising
-  encoding the frame into a compressed descriptor, computing cosine distance to
-  a salience-weighted expected descriptor from a temporal memory bank, and
-  normalising said distance by the Shannon entropy of the memory's cluster
-  distribution.
 """
 
 import numpy as np

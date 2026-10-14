@@ -6,7 +6,7 @@ Measures how much the current frame *violates* the system's learned prediction
 model.  Novelty = different from memory.  Surprise = different from what was
 *predicted* to come next, based on an online autoregressive model.
 
-RESEARCH CONTRIBUTION:
+Related approaches:
   Zhuang 1998 and Liu & Cheng 2008 have no temporal prediction — they only
   compare adjacent frames.  Zhang et al. 2016 uses LSTM for summarisation but
   the hidden state is opaque and cannot report a calibrated "surprise" score.
@@ -15,19 +15,6 @@ RESEARCH CONTRIBUTION:
   Our SSS trains a lightweight SGD regressor *online* on the stream of
   descriptors, producing a prediction-error surprise signal that is
   z-normalised against a rolling error history and sigmoidally squashed.
-
-NOVELTY CLAIM:
-  An online-learned autoregressive surprise signal computed via SGD regression
-  on PCA-DCT descriptor sequences, z-normalised against rolling prediction
-  error statistics, yielding a calibrated surprise score without offline
-  training.
-
-POTENTIAL PATENT CLAIM DIRECTION:
-  A method for computing a semantic surprise score for a video frame comprising
-  training an autoregressive predictor online on compressed frame descriptors,
-  predicting the next descriptor from a window of prior descriptors, and
-  normalising the prediction error against rolling error statistics to produce a
-  calibrated surprise signal.
 """
 
 from collections import deque

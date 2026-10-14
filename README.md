@@ -7,7 +7,7 @@
 
 **Semantic-Aware Redundancy Reduction System for Video Streams**
 
-A state-of-the-art system designed to dynamically process video streams, identify critical semantic events, and discard redundant frames. This system is heavily optimized for resource-constrained environments like edge devices or bandwidth-limited streaming applications, offering significant compression without losing important temporal and semantic information.
+A system that processes video streams, identifies semantically important events and discards redundant frames. It is aimed at resource-constrained settings such as edge devices or bandwidth-limited streaming, where storing every frame is wasteful.
 
 ---
 
@@ -44,7 +44,7 @@ Make sure you have Python 3.8+ installed.
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/yourusername/ACSE-Semantic-Frame-Retention.git
+   git clone https://github.com/MrMehulkhanna/ACSE-Semantic-Frame-Retention.git
    cd ACSE-Semantic-Frame-Retention
    ```
 
